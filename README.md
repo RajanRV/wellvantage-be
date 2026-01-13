@@ -31,6 +31,15 @@
 $ yarn install
 ```
 
+## DB Operations
+```bash
+# RUN Migrations
+$ yarn prisma:migrate
+
+# Generate required schemas
+$ yarn prisma:generate
+```
+
 ## Compile and run the project
 
 ```bash
