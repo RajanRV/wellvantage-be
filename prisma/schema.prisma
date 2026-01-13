@@ -1,0 +1,134 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  GYM_OWNER
+  TRAINER
+}
+
+enum WorkoutType {
+  CUSTOM
+  PREBUILT
+}
+
+enum SlotStatus {
+  OPEN
+  BOOKED
+  BLOCKED
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+model Gym {
+  id   String @id @default(uuid())
+  name String
+
+  users    User[]
+  workouts Workout[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id    String @id @default(uuid())
+  gymId String
+  gym   Gym    @relation(fields: [gymId], references: [id])
+
+  googleId  String  @unique
+  email     String  @unique
+  name      String?
+  avatarUrl String?
+
+  role     UserRole
+  isActive Boolean  @default(true)
+
+  availability TrainerAvailability[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([gymId])
+}
+
+model Workout {
+  id    String @id @default(uuid())
+  gymId String
+  gym   Gym    @relation(fields: [gymId], references: [id])
+
+  name String
+  type WorkoutType
+
+  notes       String?
+  isPublished Boolean @default(false)
+
+  days WorkoutDay[]
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  @@index([gymId])
+}
+
+model WorkoutDay {
+  id        String  @id @default(uuid())
+  workoutId String
+  workout   Workout @relation(fields: [workoutId], references: [id])
+
+  dayNumber Int
+  title     String?
+
+  exercises Exercise[]
+
+  @@unique([workoutId, dayNumber])
+}
+
+model Exercise {
+  id           String     @id @default(uuid())
+  workoutDayId String
+  workoutDay   WorkoutDay @relation(fields: [workoutDayId], references: [id])
+
+  name       String
+  sets       Int?
+  reps       String?
+  rest       String?
+  orderIndex Int?
+
+  createdAt DateTime @default(now())
+}
+
+model TrainerAvailability {
+  id        String @id @default(uuid())
+  trainerId String
+
+  trainer User @relation(fields: [trainerId], references: [id])
+
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+
+  repeat      Boolean   @default(false)
+  repeatUntil DateTime?
+  sessionName String?
+
+  createdAt DateTime @default(now())
+
+  @@index([trainerId])
+}
