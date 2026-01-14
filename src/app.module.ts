@@ -6,8 +6,16 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { WorkoutsModule } from './workouts/workouts.module';
 import { AvailabilityModule } from './availability/availability.module';
+import { SlotsModule } from './slots/slots.module';
 @Module({
-  imports: [PrismaModule, AuthModule, UsersModule, WorkoutsModule, AvailabilityModule],
+  imports: [
+    PrismaModule,
+    AuthModule,
+    UsersModule,
+    WorkoutsModule,
+    AvailabilityModule,
+    SlotsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
