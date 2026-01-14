@@ -1,9 +1,18 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Controller, Delete, Get, Param, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  UseGuards,
+  Post,
+} from '@nestjs/common';
 import { WorkoutsService } from './workouts.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { CreateWorkoutDto } from './dto/create-workout.dto';
 
 @Controller('workouts')
 @UseGuards(JwtAuthGuard)
@@ -14,6 +23,15 @@ export class WorkoutsController {
   async listWorkouts(@CurrentUser() user: any) {
     return this.workoutsService.getWorkouts({
       gymId: user.gymId,
+    });
+  }
+
+  @Post()
+  async createWorkout(@Body() dto: CreateWorkoutDto, @CurrentUser() user: any) {
+    return this.workoutsService.createWorkoutWithDays({
+      gymId: user.gymId,
+      role: user.role,
+      dto,
     });
   }
 

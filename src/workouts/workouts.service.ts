@@ -1,10 +1,14 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { WorkoutType } from '../../generated/prisma/client';
+import { UserRole, WorkoutType } from '../../generated/prisma/client';
+import { CreateWorkoutDto } from './dto/create-workout.dto';
 
 interface GetWorkoutsParams {
   gymId: string;
@@ -31,6 +35,52 @@ export class WorkoutsService {
             exercises: {
               orderBy: { orderIndex: 'asc' },
             },
+          },
+        },
+      },
+    });
+  }
+
+  async createWorkoutWithDays(params: {
+    gymId: string;
+    role: UserRole;
+    dto: CreateWorkoutDto;
+  }) {
+    const { gymId, role, dto } = params;
+
+    // Authorization
+    if (![UserRole.GYM_OWNER, UserRole.TRAINER].includes(role)) {
+      throw new ForbiddenException();
+    }
+
+    return this.prisma.workout.create({
+      data: {
+        gymId,
+        name: dto.name,
+        type: dto.type,
+        notes: dto.notes,
+
+        days: {
+          create: dto.days.map((day) => ({
+            dayNumber: day.dayNumber,
+            title: day.title,
+
+            exercises: {
+              create: day.exercises.map((ex) => ({
+                name: ex.name,
+                sets: ex.sets,
+                reps: ex.reps,
+                rest: ex.rest,
+                orderIndex: ex.orderIndex,
+              })),
+            },
+          })),
+        },
+      },
+      include: {
+        days: {
+          include: {
+            exercises: true,
           },
         },
       },
